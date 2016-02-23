@@ -1,0 +1,10 @@
+{
+	"name": "directory_server",
+	"description": "vibe.d-based directory server for the Salmon anti-censorship system.",
+	"copyright": "Copyright © 2014, Fred Douglas",
+	"authors": ["fred"],
+	"dependencies": {
+		"vibe-d": ">=0.7.17"
+	},
+	"versions": ["VibeDefaultMain"]
+}

@@ -1,0 +1,89 @@
+
+Users:
+email (string) <--email address, someone@example.com
+osn_id_hash (base64 string) <--hash(fred.douglas.129), NOT hash(full url)
+osn_is_renren (boolean)
+nationality (string) <-- format: TLD of country
+vpn_password (string) <-- client uses this to log into vpn servers. just one of these per client.
+
+trust (int)
+suspicion_complement_CN (float) <-- 1-suspicion (0.77 means we 23% think you are bad) (it's 1-x for efficiency)
+suspicion_complement_IR (float)
+penalty_points (int) <--starts at 1. see penalty point logic.
+banned (boolean)
+
+current_groups (array of object id) <-- groups this client has ACTUALLY gotten a server from
+users_been_with (array of object id) <--just all the users from current_groups.
+servers_given (array of strings)<--list of password hashes of all servers 
+							that have been given to this user
+mobileconfig_given (array of strings)<--list of server phashes that have been
+								sent as mobileconfig to this user
+purge_list (array of strings) <-- whenever the user needServer()s, they will be given this list (of IP addrs).
+							they should forget about all servers in the list. (this way servers
+							can be removed from users without making it look like they're blocked.)
+								
+usage_score (int32) <-- their current total credit towards next promotion
+usage_score_last_applied (date) <-- don't let a bad server report high daily usage for a user once per second!
+last_usage_value (int32) <-- if multiple servers report on a user in a day, we should 
+						just use the highest of the scores. this remembers the highest.
+						
+previous_recommendation (date) <--last time they asked us to generate 
+							a registration code for them to share
+my_recommender (string) <-- email of recommendation parent, if any
+
+============================================================================
+
+ActiveCodes:
+recommendation (string) <---- one of our single-use codes
+go_to_level (int32) <---- which trust level
+recommender (string) <--- fingerprint of recommender TODO
+
+============================================================================
+
+Servers:
+password_hash (string) <-- base64 encoded sha512 hash of a 64 byte password
+current_ip (string, just to keep it simple and stay away from network/host order nonsense)
+offered_bandwidth (int32: KB/sec)
+estimated_start (date) [what GMT time of day the server expects to usually start, "NULL" means always up]
+estimated_stop (date) [what GMT time of day the server expects to usually shut down, "NULL" means always up]
+blocked_in (array of strings (country names, in our tld format))
+group (object id) <-- group i have been assigned to. will be empty when they first join (is_assigned=false).
+is_online (boolean)
+is_assigned (bool) <-- are they in a group yet?
+total_kbytes (int64) <-- how many bytes has this server served for all of time?
+last_seen (date)
+notify_email (string)
+psk (string) server-wide IPSec PSK, for L2TP (iOS and Android)
+server_cert (string; big ole pem file contents) <-- softether auto-generates a certificate, and the wrapper 
+													reports it to us upon registration
+probably_windows (bool) <-- based on whether the server registered with a bandwidth string that had a
+						space in it... actually probably pretty reliable, despite being a massive hack
+
+============================================================================
+
+Groups:
+users (array of object ids) <-- users in this group
+user_suspicions_CN (array of floats) <--for suspicion diversity purposes. we don't need to be 
+								able to associate a specific entry here with its 
+								corresponding entry in the users array, don't worry.
+								(although i think we probably could? $push seems to always
+								append, and if you iterate you get them in order they were added.
+								(I THINK; VERIFY BEFORE YOU RELY ON THIS.)
+user_suspicions_IR (array of floats)
+servers (array of string) (pw hashes)
+level (int) <---- level of this group
+bucket (int) TODO are we going to end up using this? maybe not
+blocked_in (array of strings (country names, tld style))
+is_alive (bool) <-- whether the group is "alive" or "archived". an archived group is one that has seen
+				some servers get blocked, so we won't assign more servers or users(?) to it. however, 
+				the current users can keep using it, of course.
+
+============================================================================
+
+vpngate:
+ipaddr (string)
+port (int)
+offered_bandwidth (int, KB/sec)
+server_cert (string; big ole pem file contents. stored with \n converted to *.)
+number (int)
+
